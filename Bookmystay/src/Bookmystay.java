@@ -1,34 +1,99 @@
-public class Bookmystay {
-    /**
-     * Book My Stay Application
-     *
-     * This class represents the entry point of the Hotel Booking Management System.
-     * It demonstrates how a Java application starts execution using the main() method
-     * and displays a welcome message to the user.
-     *
-     * The program prints the application name and version to the console.
-     * This helps verify that the application has started successfully.
-     *
-     * @author Student
-     * @version 1.0
-     */
 
+    // Abstract Class (Abstraction)
+    abstract class Room {
+        private int beds;
+        private int size; // in sq ft
+        private double price;
 
-        /**
-         * Main method - Entry point of the Java application.
-         * The JVM starts program execution from this method.
-         *
-         * @param args Command-line arguments passed during program execution
-         */
+        public Room(int beds, int size, double price) {
+            this.beds = beds;
+            this.size = size;
+            this.price = price;
+        }
+
+        public int getBeds() {
+            return beds;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        // Abstract method
+        public abstract String getRoomType();
+
+        // Common display method (Encapsulation)
+        public void displayDetails(int availability) {
+            System.out.println("Room Type: " + getRoomType());
+            System.out.println("Beds: " + beds);
+            System.out.println("Size: " + size + " sq ft");
+            System.out.println("Price: ₹" + price);
+            System.out.println("Available Rooms: " + availability);
+            System.out.println("----------------------------");
+        }
+    }
+
+    // Concrete Class - Single Room
+    class SingleRoom extends Room {
+        public SingleRoom() {
+            super(1, 200, 2000);
+        }
+
+        @Override
+        public String getRoomType() {
+            return "Single Room";
+        }
+    }
+
+    // Concrete Class - Double Room
+    class DoubleRoom extends Room {
+        public DoubleRoom() {
+            super(2, 350, 3500);
+        }
+
+        @Override
+        public String getRoomType() {
+            return "Double Room";
+        }
+    }
+
+    // Concrete Class - Suite Room
+    class SuiteRoom extends Room {
+        public SuiteRoom() {
+            super(3, 600, 7000);
+        }
+
+        @Override
+        public String getRoomType() {
+            return "Suite Room";
+        }
+    }
+
+    // Main Class
+    public class Bookmystay {
+
         public static void main(String[] args) {
 
-            // Display welcome message
-            System.out.println("=====================================");
-            System.out.println("      Welcome to Book My Stay");
-            System.out.println("      Hotel Booking System v1.0");
-            System.out.println("=====================================");
-            System.out.println("Application started successfully.");
+            // Static Availability (simple variables)
+            int singleAvailability = 5;
+            int doubleAvailability = 3;
+            int suiteAvailability = 2;
 
+            // Polymorphism (Room reference)
+            Room single = new SingleRoom();
+            Room doub = new DoubleRoom();
+            Room suite = new SuiteRoom();
+
+            System.out.println("---- Hotel Room Details ----");
+
+            // Display Details
+            single.displayDetails(singleAvailability);
+            doub.displayDetails(doubleAvailability);
+            suite.displayDetails(suiteAvailability);
         }
     }
 
