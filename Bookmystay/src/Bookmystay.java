@@ -1,121 +1,93 @@
+
 import java.util.*;
 
-    // Room Domain Model
-    class Room {
-        private String type;
-        private double price;
-        private List<String> amenities;
+    // Reservation (Represents booking request)
+    class Reservation {
+        private String guestName;
+        private String roomType;
 
-        public Room(String type, double price, List<String> amenities) {
-            this.type = type;
-            this.price = price;
-            this.amenities = amenities;
+        public Reservation(String guestName, String roomType) {
+            this.guestName = guestName;
+            this.roomType = roomType;
         }
 
-        public String getType() {
-            return type;
+        public String getGuestName() {
+            return guestName;
         }
 
-        public double getPrice() {
-            return price;
+        public String getRoomType() {
+            return roomType;
         }
 
-        public List<String> getAmenities() {
-            return amenities;
-        }
-
-        public void displayDetails() {
-            System.out.println("Room Type: " + type);
-            System.out.println("Price: ₹" + price);
-            System.out.println("Amenities: " + amenities);
-            System.out.println("-----------------------------");
+        public void display() {
+            System.out.println("Guest: " + guestName + " | Room Type: " + roomType);
         }
     }
 
-    // Inventory (State Holder)
-    class Inventory {
-        private Map<String, Integer> availabilityMap;
+    // Booking Request Queue (FIFO)
+    class BookingQueue {
+        private Queue<Reservation> queue;
 
-        public Inventory() {
-            availabilityMap = new HashMap<>();
+        public BookingQueue() {
+            queue = new LinkedList<>();
         }
 
-        public void addRoom(String roomType, int count) {
-            availabilityMap.put(roomType, count);
+        // Add request (enqueue)
+        public void addRequest(Reservation reservation) {
+            queue.offer(reservation);
+            System.out.println("Request added for " + reservation.getGuestName());
         }
 
-        // READ-ONLY ACCESS
-        public int getAvailability(String roomType) {
-            return availabilityMap.getOrDefault(roomType, 0);
-        }
-
-        public Set<String> getAllRoomTypes() {
-            return availabilityMap.keySet();
-        }
-    }
-
-    // Search Service (Read-only logic)
-    class SearchService {
-
-        public void searchAvailableRooms(Inventory inventory, Map<String, Room> roomMap) {
-
-            System.out.println("\nAvailable Rooms:\n");
-
-            boolean found = false;
-
-            for (String roomType : inventory.getAllRoomTypes()) {
-
-                int availableCount = inventory.getAvailability(roomType);
-
-                // Validation Logic (Defensive Programming)
-                if (availableCount > 0) {
-
-                    Room room = roomMap.get(roomType);
-
-                    if (room != null) {
-                        room.displayDetails();
-                        System.out.println("Available Count: " + availableCount);
-                        System.out.println("=============================");
-                        found = true;
-                    }
-                }
+        // View all requests (READ-ONLY)
+        public void viewRequests() {
+            if (queue.isEmpty()) {
+                System.out.println("No booking requests.");
+                return;
             }
 
-            if (!found) {
-                System.out.println("No rooms available.");
+            System.out.println("\n--- Booking Requests (FIFO Order) ---");
+            for (Reservation r : queue) {
+                r.display();
             }
+        }
+
+        // Get next request (for future processing)
+        public Reservation getNextRequest() {
+            return queue.peek(); // no removal (no mutation)
         }
     }
 
     // Main Class
     public class Bookmystay {
 
-
         public static void main(String[] args) {
 
-            // Step 1: Create Room Objects (Domain Model)
-            Room single = new Room("Single", 2000, Arrays.asList("WiFi", "TV"));
-            Room deluxe = new Room("Deluxe", 4000, Arrays.asList("WiFi", "TV", "AC"));
-            Room suite = new Room("Suite", 7000, Arrays.asList("WiFi", "TV", "AC", "Mini Bar"));
+            // Create Booking Queue
+            BookingQueue bookingQueue = new BookingQueue();
 
-            // Step 2: Store in Map
-            Map<String, Room> roomMap = new HashMap<>();
-            roomMap.put("Single", single);
-            roomMap.put("Deluxe", deluxe);
-            roomMap.put("Suite", suite);
+            // Guest submits booking requests
+            Reservation r1 = new Reservation("Nideesh", "Single");
+            Reservation r2 = new Reservation("Arun", "Deluxe");
+            Reservation r3 = new Reservation("Priya", "Suite");
 
-            // Step 3: Setup Inventory (State Holder)
-            Inventory inventory = new Inventory();
-            inventory.addRoom("Single", 5);
-            inventory.addRoom("Deluxe", 0);   // Will be filtered out
-            inventory.addRoom("Suite", 2);
+            // Add to queue (FIFO)
+            bookingQueue.addRequest(r1);
+            bookingQueue.addRequest(r2);
+            bookingQueue.addRequest(r3);
 
-            // Step 4: Search Service (Read-only)
-            SearchService searchService = new SearchService();
+            // View requests (order preserved)
+            bookingQueue.viewRequests();
 
-            // Step 5: Guest initiates search
-            searchService.searchAvailableRooms(inventory, roomMap);
+            // Peek next request (no removal, no allocation)
+            Reservation next = bookingQueue.getNextRequest();
+            if (next != null) {
+                System.out.println("\nNext request to process:");
+                next.display();
+            }
         }
     }
+
+
+
 
 
