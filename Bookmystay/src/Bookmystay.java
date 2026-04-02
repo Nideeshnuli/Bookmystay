@@ -95,5 +95,7 @@
             doub.displayDetails(doubleAvailability);
             suite.displayDetails(suiteAvailability);
         }
-    }
+
+
+
 
