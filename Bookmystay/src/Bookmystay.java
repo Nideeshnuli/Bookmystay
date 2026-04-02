@@ -1,139 +1,105 @@
 
-import java.util.*;
+// Abstract Room class
+abstract class Room {
+    private String roomType;
+    private int numberOfBeds;
+    private double pricePerNight;
 
-        // Reservation (from Queue)
-        class Reservation {
-            private String guestName;
-            private String roomType;
+    public Room(String roomType, int numberOfBeds, double pricePerNight) {
+        this.roomType = roomType;
+        this.numberOfBeds = numberOfBeds;
+        this.pricePerNight = pricePerNight;
+    }
 
-            public Reservation(String guestName, String roomType) {
-                this.guestName = guestName;
-                this.roomType = roomType;
-            }
+    public String getRoomType() {
+        return roomType;
+    }
 
-            public String getGuestName() {
-                return guestName;
-            }
+    public int getNumberOfBeds() {
+        return numberOfBeds;
+    }
 
-            public String getRoomType() {
-                return roomType;
-            }
-        }
+    public double getPricePerNight() {
+        return pricePerNight;
+    }
 
-        // Inventory Service (State Holder)
-        class Inventory {
-            private Map<String, Integer> availability = new HashMap<>();
+    // Abstract method (forces subclasses to define details)
+    public abstract void displayRoomDetails();
+}
 
-            public void addRoom(String type, int count) {
-                availability.put(type, count);
-            }
+// Single Room
+class SingleRoom extends Room {
 
-            public int getAvailability(String type) {
-                return availability.getOrDefault(type, 0);
-            }
+    public SingleRoom() {
+        super("Single Room", 1, 2000);
+    }
 
-            public void decrement(String type) {
-                availability.put(type, availability.get(type) - 1);
-            }
-        }
+    @Override
+    public void displayRoomDetails() {
+        System.out.println("Room Type: " + getRoomType());
+        System.out.println("Beds: " + getNumberOfBeds());
+        System.out.println("Price per night: ₹" + getPricePerNight());
+    }
+}
 
-        // Booking Queue (FIFO)
-        class BookingQueue {
-            private Queue<Reservation> queue = new LinkedList<>();
+// Double Room
+class DoubleRoom extends Room {
 
-            public void addRequest(Reservation r) {
-                queue.offer(r);
-            }
+    public DoubleRoom() {
+        super("Double Room", 2, 3500);
+    }
 
-            public Reservation getNextRequest() {
-                return queue.poll(); // dequeue for processing
-            }
+    @Override
+    public void displayRoomDetails() {
+        System.out.println("Room Type: " + getRoomType());
+        System.out.println("Beds: " + getNumberOfBeds());
+        System.out.println("Price per night: ₹" + getPricePerNight());
+    }
+}
 
-            public boolean isEmpty() {
-                return queue.isEmpty();
-            }
-        }
+// Suite Room
+class SuiteRoom extends Room {
 
-        // Booking Service (Allocation Logic)
-        class BookingService {
+    public SuiteRoom() {
+        super("Suite Room", 3, 6000);
+    }
 
-            // Map: RoomType → Set of Allocated Room IDs
-            private Map<String, Set<String>> allocatedRooms = new HashMap<>();
+    @Override
+    public void displayRoomDetails() {
+        System.out.println("Room Type: " + getRoomType());
+        System.out.println("Beds: " + getNumberOfBeds());
+        System.out.println("Price per night: ₹" + getPricePerNight());
+    }
+}
 
-            // Global Set to ensure uniqueness
-            private Set<String> usedRoomIds = new HashSet<>();
+// Main Application
+public class Bookmystay {
 
-            // Allocate rooms
-            public void processBookings(BookingQueue queue, Inventory inventory) {
+    public static void main(String[] args) {
 
-                while (!queue.isEmpty()) {
+        // Create room objects (Polymorphism)
+        Room singleRoom = new SingleRoom();
+        Room doubleRoom = new DoubleRoom();
+        Room suiteRoom = new SuiteRoom();
 
-                    Reservation r = queue.getNextRequest();
-                    String type = r.getRoomType();
+        // Static availability variables
+        int singleRoomAvailable = 10;
+        int doubleRoomAvailable = 5;
+        int suiteRoomAvailable = 2;
 
-                    System.out.println("\nProcessing request for: " + r.getGuestName());
+        // Display details
+        System.out.println("=== Room Details ===\n");
 
-                    // Check availability
-                    if (inventory.getAvailability(type) > 0) {
+        singleRoom.displayRoomDetails();
+        System.out.println("Available: " + singleRoomAvailable + "\n");
 
-                        // Generate unique room ID
-                        String roomId = generateRoomId(type);
+        doubleRoom.displayRoomDetails();
+        System.out.println("Available: " + doubleRoomAvailable + "\n");
 
-                        // Ensure uniqueness using Set
-                        while (usedRoomIds.contains(roomId)) {
-                            roomId = generateRoomId(type);
-                        }
-
-                        // Atomic Operation (Assign + Update)
-                        usedRoomIds.add(roomId);
-
-                        allocatedRooms
-                                .computeIfAbsent(type, k -> new HashSet<>())
-                                .add(roomId);
-
-                        inventory.decrement(type);
-
-                        // Confirmation
-                        System.out.println("Booking Confirmed!");
-                        System.out.println("Guest: " + r.getGuestName());
-                        System.out.println("Room Type: " + type);
-                        System.out.println("Room ID: " + roomId);
-
-                    } else {
-                        System.out.println("Booking Failed! No rooms available for " + type);
-                    }
-                }
-            }
-
-            // Room ID Generator
-            private String generateRoomId(String type) {
-                return type.substring(0, 1).toUpperCase() + (int)(Math.random() * 1000);
-            }
-        }
-
-        // Main Class
-        public class Bookmystay {
-
-            public static void main(String[] args) {
-
-                // Step 1: Setup Inventory
-                Inventory inventory = new Inventory();
-                inventory.addRoom("Single", 2);
-                inventory.addRoom("Deluxe", 1);
-                inventory.addRoom("Suite", 1);
-
-                // Step 2: Setup Booking Queue (FIFO)
-                BookingQueue queue = new BookingQueue();
-                queue.addRequest(new Reservation("Nideesh", "Single"));
-                queue.addRequest(new Reservation("Arun", "Single"));
-                queue.addRequest(new Reservation("Priya", "Single")); // will fail
-                queue.addRequest(new Reservation("Kiran", "Suite"));
-
-                // Step 3: Process Bookings
-                BookingService service = new BookingService();
-                service.processBookings(queue, inventory);
-            }
-        }
+        suiteRoom.displayRoomDetails();
+        System.out.println("Available: " + suiteRoomAvailable + "\n");
+    }
+}
 
 
 
